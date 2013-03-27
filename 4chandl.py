@@ -3,37 +3,42 @@ import urllib
 import re
 import sys
 import os.path
-import console
+import json
 
-def listthread(thread):
+def jlistthread(thread,board):
     """Get links to images in a thread and return them as a list
     returns list of URLs or 1 when an error was encountered
 
     """
+    thread=thread[-8:]
     try:
-        link=urllib.urlopen(thread)
+        link=urllib.urlopen('http://api.4chan.org/'+board+'/res/'+thread+'.json')
     except IOError:
         sys.stderr.write('URL IOError - thread not found/not connected to internet\n')
         exit(1)
-    src=link.read()
-    patt=re.compile('a href="//images.4chan.org/[^"]+')
-    images=re.findall(patt,src)
+    images=list()
+    data=link.read()
+    data=json.loads(data)
+    data=data['posts']
+    for each in data:
+	    try:
+	    	images.append(str(each['tim'])+each['ext'])
+	    except KeyError:
+		continue
     return images
 
-def dlimage(link):
+def dlimage(image,board):
     """Downloads image specified as link and shows progressbar."""
-    link=link[10:]
-    link='http://'+link
-    imgname=link[-17:]
-    if (os.path.isfile(imgname)):
-        sys.stdout.write(imgname+'\t'+'[ SKIPPED ]\n')
+    link='http://images.4chan.org/'+board+'/src/'+image
+    if (os.path.isfile(image)):
+        sys.stdout.write(image+'\t'+'[ SKIPPED ]\n')
         sys.stdout.flush()
         return 1
     imgsrc=urllib.urlopen(link)
     size=imgsrc.headers.get("content-length")
-    output=open(imgname,'wb')
+    output=open(image,'wb')
     size=int(size)//20
-    sys.stdout.write(imgname+'\t[')
+    sys.stdout.write(image+'\t[')
     for i in range(20):
         output.write(imgsrc.read(size))
         sys.stdout.write('.')
@@ -47,7 +52,10 @@ def main(thread='',folder='./'):
     skip=0
     if thread=='':
         thread=raw_input('Thread link: ')
-    images=listthread(thread)
+    board=thread[24:]
+    patt=re.compile('(.*?)/')
+    board=re.search(patt,board).group(1)
+    images=jlistthread(thread,board)
     if len(images)==0:
         sys.stderr.write('No images found. Exitting...')
         exit(0)
@@ -56,11 +64,12 @@ def main(thread='',folder='./'):
         os.chdir(folder)
     print(folder)
     for image in images:
-        temp=dlimage(image)
+        temp=dlimage(image,board)
         if temp==0:
             count+=1
         else:
             skip+=1
+    print('-----------------------------------')
     print('DL complete - '+str(count)+' files.')
     print('Skipped '+str(skip)+' files.')
 
