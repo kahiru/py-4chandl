@@ -1,4 +1,3 @@
-#!/usr/env python
 import urllib
 import re
 import sys
