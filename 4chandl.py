@@ -1,4 +1,5 @@
-#!/bin/env python
+#!/usr/bin/env python
+import getopt
 import urllib
 import re
 import sys
@@ -6,7 +7,7 @@ import os.path
 import json
 import inspect
 
-def jlistthread(thread,board):
+def jlistthread(thread,board,x,y):
     """Get links to images in a thread and return them as a list
     returns list of URLs or 1 when an error was encountered
 
@@ -22,25 +23,31 @@ def jlistthread(thread,board):
     data=link.read()
     data=json.loads(data)
     data=data['posts']
+    skip=0
     for each in data:
 	    try:
-	    	images.append(str(each['tim'])+each['ext'])
+		if int(each['w'])<int(x):
+			if int(each['h'])<int(y) or y==-1:
+				sys.stdout.write((str(each['tim'])+each['ext']+' [ '+str(each['w'])+'x'+str(each['h'])+' ]\t'+'[ SKIPPED AS LOWRES]\n'))
+				skip+=1
+				continue
+	    	images.append((str(each['tim'])+each['ext'],(each['w'],each['h'])))
 	    except KeyError:
 		continue
-    return images
+    return (images,skip)
 
 def dlimage(image,board):
     """Downloads image specified as link and shows progressbar."""
-    link='http://images.4chan.org/'+board+'/src/'+image
-    if (os.path.isfile(image)):
-        sys.stdout.write(image+'\t'+'[ SKIPPED ]\n')
+    link='http://images.4chan.org/'+board+'/src/'+image[0]
+    if (os.path.isfile(image[0])):
+        sys.stdout.write(image[0]+' [ '+str(image[1][0])+'x'+str(image[1][1])+' ]\t'+'[ SKIPPED ]\n')
         sys.stdout.flush()
         return 1
     imgsrc=urllib.urlopen(link)
     size=imgsrc.headers.get("content-length")
-    output=open(image,'wb')
+    output=open(image[0],'wb')
     size=int(size)//20
-    sys.stdout.write(image+'\t[')
+    sys.stdout.write(image[0]+' [ '+str(image[1][0])+'x'+str(image[1][1])+' ]\t[')
     for i in range(20):
         output.write(imgsrc.read(size))
         sys.stdout.write('.')
@@ -50,29 +57,28 @@ def dlimage(image,board):
     output.close()
     return 0
 
-def main(thread='',folder='./'):
+def main(thread,folder,x,y):
     count=0
-    skip=0
+    print(folder)
     if thread=='':
         thread=raw_input('Thread link: ')
     board=thread[24:]
     patt=re.compile('(.*?)/')
     board=re.search(patt,board).group(1)
-    images=jlistthread(thread,board)
+    images,skip=jlistthread(thread,board,x,y)
     if len(images)==0:
         sys.stderr.write('No images found. Exitting...')
         exit(0)
     if not os.path.exists(folder):
         os.makedirs(folder)
         os.chdir(folder)
-    print(folder)
     for image in images:
         temp=dlimage(image,board)
         if temp==0:
             count+=1
         else:
             skip+=1
-    print('-----------------------------------')
+    print('----------------------------------------------------------')
     print('DL complete - '+str(count)+' files.')
     print('Skipped '+str(skip)+' files.')
 
@@ -83,14 +89,27 @@ def printhelp():
     print('If no FOLDER is specified, script downloads images to current folder')
 
 if __name__=='__main__':
-    if len(sys.argv)==1:
-        main()
-    elif len(sys.argv)==2:
-        if sys.argv[1]=='--help':
-            printhelp()
-        else:
-            main(sys.argv[1])
-    elif len(sys.argv)==3:
-        main(sys.argv[1],sys.argv[2])
-    else: print('Execute 4chandl.py --help for invocation details.')
-
+	optlist,args=getopt.getopt(sys.argv[1:], "x:y:hv", ['help','verbose'])
+	x=y=-1
+	for o, a in optlist:
+		if o in ('-v', '--verbose'):
+			verbose=True
+		elif o in ('-x'):
+			x=a
+			print(x)
+		elif o in ('-y'):
+			print(a)
+			y=a
+		elif o in ('--help','-h'):
+			printhelp()
+			sys.exit()
+	if len(args)==2:
+		folder=args[1]
+		link=args[0]
+	elif len(args)==1:
+		folder='./'
+		link=args[0]
+	else:
+		printhelp()
+		sys.exit()
+	main(link,folder,x,y)
