@@ -4,13 +4,15 @@ import re
 import sys
 import os.path
 import json
+import inspect
 
 def jlistthread(thread,board):
     """Get links to images in a thread and return them as a list
     returns list of URLs or 1 when an error was encountered
 
     """
-    thread=thread[-8:]
+    patt=re.compile('p(\d*)$')
+    thread=re.search(patt,thread).group(1)
     try:
         link=urllib.urlopen('http://api.4chan.org/'+board+'/res/'+thread+'.json')
     except IOError:
@@ -44,6 +46,7 @@ def dlimage(image,board):
         sys.stdout.write('.')
         sys.stdout.flush()
     sys.stdout.write(']\n')
+   
     output.close()
     return 0
 
