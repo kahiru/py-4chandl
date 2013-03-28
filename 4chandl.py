@@ -28,7 +28,7 @@ def jlistthread(thread,board,x,y):
 	    try:
 		if int(each['w'])<int(x):
 			if int(each['h'])<int(y) or y==-1:
-				sys.stdout.write((str(each['tim'])+each['ext']+' [ '+str(each['w'])+'x'+str(each['h'])+' ]\t'+'[ SKIPPED AS LOWRES]\n'))
+				sys.stdout.write((str(each['tim'])+each['ext']+'\t     '+str(each['w'])+'\t'+str(each['h'])+'\t   '+'[ SKIPPED AS LOWRES]\n'))
 				skip+=1
 				continue
 	    	images.append((str(each['tim'])+each['ext'],(each['w'],each['h'])))
@@ -40,14 +40,14 @@ def dlimage(image,board):
     """Downloads image specified as link and shows progressbar."""
     link='http://images.4chan.org/'+board+'/src/'+image[0]
     if (os.path.isfile(image[0])):
-        sys.stdout.write(image[0]+' [ '+str(image[1][0])+'x'+str(image[1][1])+' ]\t'+'[ SKIPPED ]\n')
+        sys.stdout.write(image[0]+'\t     '+str(image[1][0])+'\t'+str(image[1][1])+'\t'+'   [ SKIPPED ]\n')
         sys.stdout.flush()
         return 1
     imgsrc=urllib.urlopen(link)
     size=imgsrc.headers.get("content-length")
     output=open(image[0],'wb')
     size=int(size)//20
-    sys.stdout.write(image[0]+' [ '+str(image[1][0])+'x'+str(image[1][1])+' ]\t[')
+    sys.stdout.write(image[0]+'\t     '+str(image[1][0])+'\t'+str(image[1][1])+'\t   [')
     for i in range(20):
         output.write(imgsrc.read(size))
         sys.stdout.write('.')
@@ -59,7 +59,7 @@ def dlimage(image,board):
 
 def main(thread,folder,x,y):
     count=0
-    print(folder)
+    print('Filename\t\t     Width\tHeight\t     Status')
     if thread=='':
         thread=raw_input('Thread link: ')
     board=thread[24:]
