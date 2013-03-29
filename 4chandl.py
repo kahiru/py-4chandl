@@ -38,6 +38,7 @@ def jlistthread(thread,board,x,y):
 
 def dlimage(image,board):
     """Downloads image specified as link and shows progressbar."""
+    print(os.getcwd())
     link='http://images.4chan.org/'+board+'/src/'+image[0]
     if (os.path.isfile(image[0])):
         sys.stdout.write(image[0]+'\t     '+str(image[1][0])+'\t'+str(image[1][1])+'\t'+'   [ SKIPPED ]\n')
@@ -58,6 +59,7 @@ def dlimage(image,board):
     return 0
 
 def main(thread,folder,x,y):
+    print(folder)
     count=0
     print('Filename\t\t     Width\tHeight\t     Status')
     if thread=='':
@@ -71,7 +73,8 @@ def main(thread,folder,x,y):
         exit(0)
     if not os.path.exists(folder):
         os.makedirs(folder)
-        os.chdir(folder)
+	print(folder)
+    os.chdir(folder)
     for image in images:
         temp=dlimage(image,board)
         if temp==0:
@@ -96,9 +99,7 @@ if __name__=='__main__':
 			verbose=True
 		elif o in ('-x'):
 			x=a
-			print(x)
 		elif o in ('-y'):
-			print(a)
 			y=a
 		elif o in ('--help','-h'):
 			printhelp()
