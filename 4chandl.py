@@ -28,7 +28,7 @@ def jlistthread(thread,board,x,y):
 	    try:
 		if int(each['w'])<int(x):
 			if int(each['h'])<int(y) or y==-1:
-				sys.stdout.write((str(each['tim'])+each['ext']+'\t     '+str(each['w'])+'\t'+str(each['h'])+'\t   '+'[ SKIPPED AS LOWRES]\n'))
+				sys.stdout.write((str(each['tim'])+each['ext']+'\t     '+str(each['w'])+'\t'+str(each['h'])+'\t   '+'[ SKIPPED AS LOWRES ]\n'))
 				skip+=1
 				continue
 	    	images.append((str(each['tim'])+each['ext'],(each['w'],each['h'])))
@@ -48,7 +48,7 @@ def dlimage(image,board):
     output=open(image[0],'wb')
     size=int(size)//20
     sys.stdout.write(image[0]+'\t     '+str(image[1][0])+'\t'+str(image[1][1])+'\t   [')
-    for i in range(20):
+    for i in range(19):
         output.write(imgsrc.read(size))
         sys.stdout.write('.')
         sys.stdout.flush()
