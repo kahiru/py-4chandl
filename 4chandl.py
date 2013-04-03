@@ -38,7 +38,6 @@ def jlistthread(thread,board,x,y):
 
 def dlimage(image,board):
     """Downloads image specified as link and shows progressbar."""
-    print(os.getcwd())
     link='http://images.4chan.org/'+board+'/src/'+image[0]
     if (os.path.isfile(image[0])):
         sys.stdout.write(image[0]+'\t     '+str(image[1][0])+'\t'+str(image[1][1])+'\t'+'   [ SKIPPED ]\n')
